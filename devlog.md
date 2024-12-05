@@ -128,3 +128,16 @@ somehow it's still being cached in the history. So I'm making a new repository. 
 
 Hoping that this is still ok because my devlog still proves my previous work, and I don't understand why the file is preventing me from pushing to my previous repository.
 
+-- 12/5 4:35pm -- 
+
+Plan: create the load function
+
+ - will be assuming that the values come in the form 
+ 'n,n\n' 
+ While writing I realized I could reuse the previous insert function if I were to rewrite it.
+ So I moved the user input that was originally in the insert function into main, so that I could reuse it for my load function
+ 
+ - Ran into an issue that took me an hour to figure out, in main I accidently wrote the parameter as 'open_file' instead of 'open_filename'
+ and this resulted in the load function reading the filename as a function and the program would error out. 
+ I thought it was an issue in how I was parsing the numbers in the file, and tried multiple solutions until I realized I had a typo. 
+ 

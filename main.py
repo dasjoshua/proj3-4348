@@ -59,15 +59,9 @@ def open_file():
         return None
 # ------------------ END OF OPEN FUNCTION ----------------------------------------------------------
 
-def insert(open_file):
-    if not open_file:
-        print("No index file is open. Please create or open a file first.")
-        return
+def insert(open_file, key, value):
 
     try:
-        
-        key = int(input("Enter key (unsigned integer): "))
-        value = int(input("Enter value (unsigned integer): "))
 
         # Open the file in read/write mode
         with open(open_file, "rb+") as file:
@@ -261,8 +255,39 @@ def search(open_file):
         print(f"Error during search operation: {e}")
 # ------------- END OF SEARCH FUNCTION ----------------------------------------------------------------
 
-def load():
-    print("load function")
+def load(open_file):
+    
+    if not open_file:
+        print("No index file is open.")
+        return
+
+    input_file = input("Enter load file: ").strip()
+
+    # Check if the input file exists
+    if not os.path.exists(input_file):
+        print(f"Error: File '{input_file}' does not exist.")
+        return
+
+    try:
+        with open(input_file, "r") as file:
+
+            for line in file:
+                line_number += 1 # debugging
+                # Skip empty lines
+                if not line.strip():
+                    continue
+
+                list = line.strip().split(',')
+                key = int(list[0])
+                value = int(list[1])
+
+                # Insert the key-value pair into the B-Tree
+                insert(open_file, key, value)
+
+
+    except Exception as e:
+        print(f"Error during load operation: {e}")
+
 
 def print_btree(open_file):
     
@@ -401,11 +426,18 @@ def main():
         elif(command == "open"):
             open_filename = open_file()
         elif(command == "insert"):
-            insert(open_filename)
+            if not open_file:
+                print("No index file is open. Please create or open a file first.")
+                continue
+    
+            key = int(input("Enter key (unsigned integer): "))
+            value = int(input("Enter value (unsigned integer): "))
+            insert(open_filename, key, value)
+
         elif(command == "search"):
             search(open_filename)
         elif(command == "load"):
-            load()
+            load(open_filename)
         elif(command == "print"):
             print_btree(open_filename)
         elif(command == "extract"):
