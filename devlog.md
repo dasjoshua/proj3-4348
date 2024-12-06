@@ -152,3 +152,8 @@ Plan: try to debug the error with creating new nodes
  I'm splitting the node into a left and right node. 
 
  But I'm still figuring out how I will save it back into the file and where it'll be inserted from. I know this is the logic needed though. 
+
+-- 12/5 6:54pm -- 
+
+ - Updated the insert function to account for the new split function. 
+ rewrote the insert function so that it calls the split function by having left and right nodes. 

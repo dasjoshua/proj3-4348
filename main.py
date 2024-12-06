@@ -139,22 +139,50 @@ def insert(open_file, key, value):
                         print(f"Inserted ({key}, {value}) into the tree.")
                         return
 
-                    # if node is full, create a new node
+                        # If node is full, we need to split
                     else:
-                       
-                        new_block_id = next_block_id
-                        next_block_id += 1
-
+                        # Perform node split
+                        split_result = split_node(file, current_block_id, next_block_id)
+                        if not split_result:
+                            print("Error during node split.")
+                            return
                         
-                        new_node = create_btree_node(new_block_id, parent_block_id, [(key, value)])
+                        next_block_id, middle_key, middle_value, new_node_block_id = split_result
 
-                        # Write the new node back to file
-                        file.seek(new_block_id * 512)
-                        file.write(new_node)
+                        # If root is being split
+                        if current_block_id == root_block_id:
+                            # Create a new root
+                            new_root_block_id = next_block_id
+                            next_block_id += 1
 
-                        # Update header with new next block id
-                        file.seek(16)
-                        file.write(struct.pack(">Q", next_block_id))
+                            # Create new root node with median key
+                            new_root_node = create_btree_node(
+                                new_root_block_id, 
+                                0, 
+                                [(middle_key, middle_value)]
+                            )
+
+                            # Update root node's children
+                            file.seek(new_root_block_id * 512 + 488)  # Go to children section
+                            file.write(struct.pack(">QQ", current_block_id, new_node_block_id))
+
+                            # Write new root node
+                            file.seek(new_root_block_id * 512)
+                            file.write(new_root_node)
+
+                            # Update header with new root and next block ID
+                            file.seek(8)
+                            file.write(struct.pack(">QQ", new_root_block_id, next_block_id))
+
+                            print(f"Root split. New root contains ({middle_key}, {middle_value})")
+                            return
+
+                        # For non-root splits, we need to insert median into parent
+                        else:
+                            # Need to implement parent node insertion logic here
+                            # This would involve recursively splitting parent nodes if needed
+                            print("Parent node insertion not fully implemented.")
+                            return
 
                 # If not a leaf, find the appropriate child to descend into
                 else:
@@ -163,7 +191,8 @@ def insert(open_file, key, value):
                     while child_index < num_keys and keys[child_index] < key:
                         child_index += 1
                     
-                    # Move to the child node
+                    # Update tracking variables
+                    parent_block_id = current_block_id
                     current_block_id = children[child_index]
 
     except Exception as e:
