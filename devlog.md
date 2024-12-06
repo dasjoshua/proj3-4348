@@ -157,3 +157,9 @@ Plan: try to debug the error with creating new nodes
 
  - Updated the insert function to account for the new split function. 
  rewrote the insert function so that it calls the split function by having left and right nodes. 
+
+ -- 12/5 7:02pm --
+
+  - The split function was now having a new issue where it said it expected 31 items to split. but i realized that I needed to 
+  fully account for the space that the keys would take up. 
+  - and now the project is fully functional. 

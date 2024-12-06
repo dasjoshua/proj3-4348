@@ -235,11 +235,11 @@ def create_btree_node(block_id, parent_id, key_value_pairs):
     
     return node_data
 
-def split_node(file, root_block_id, next_block_id):
+def split_node(file, current_block_id, next_block_id):
 
-    
+    try:
         # Read the full node
-        file.seek(root_block_id * 512)
+        file.seek(current_block_id * 512)
         node_data = file.read(512)
         
         # Unpack the node
@@ -260,21 +260,22 @@ def split_node(file, root_block_id, next_block_id):
         middle_key = keys[middle_index]
         middle_value = values[middle_index]
         
-        # save left child data
-        left_keys = keys[:middle_index]
-        left_values = values[:middle_index]
-        left_children = children[:middle_index + 1]
+        # save left node data 
+        left_keys = keys[:middle_index] + [0] * (19 - len(keys[:middle_index]))
+        left_values = values[:middle_index] + [0] * (19 - len(values[:middle_index]))
+        left_children = children[:middle_index + 1] + [0] * (20 - len(children[:middle_index + 1]))
         
-        # save right child data
-        right_keys = keys[middle_index + 1:]
-        right_values = values[middle_index + 1:]
-        right_children = children[middle_index + 1:]
+        # save right node data
+        right_keys = keys[middle_index + 1:] + [0] * (19 - len(keys[middle_index + 1:]))
+        right_values = values[middle_index + 1:] + [0] * (19 - len(values[middle_index + 1:]))
+        right_children = children[middle_index + 1:] + [0] * (20 - len(children[middle_index + 1:]))
+        
         
         # Create left node
         left_node_data = struct.pack(node_format, 
-            root_block_id,  # Keep the original block ID for the left node
+            current_block_id,  # Keep the original block ID for the left node
             parent_block_id,   # Keep the original parent
-            len(left_keys),    # Number of keys
+            len(keys[:middle_index]),    # Number of keys
             *left_keys, 
             *left_values, 
             *left_children
@@ -287,11 +288,25 @@ def split_node(file, root_block_id, next_block_id):
         right_node_data = struct.pack(node_format,
             right_node_block_id,  # New block ID for right node
             parent_block_id,       # Keep the original parent
-            len(right_keys),       # Number of keys
+            len(keys[middle_index + 1:]),       # Number of keys
             *right_keys,
             *right_values,
             *right_children
         )
+
+        # Write to file
+        file.seek(current_block_id * 512)
+        file.write(left_node_data)
+        
+       
+        file.seek(right_node_block_id * 512)
+        file.write(right_node_data)
+        
+        return next_block_id, middle_key, middle_value, right_node_block_id
+    
+    except Exception as e:
+        print(f"Error during node split: {e}")
+        return None
 
 # ---------- END OF INSERT FUNCTION ------------------------------------------------------------------------------
 
