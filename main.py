@@ -206,6 +206,64 @@ def create_btree_node(block_id, parent_id, key_value_pairs):
     
     return node_data
 
+def split_node(file, root_block_id, next_block_id):
+
+    
+        # Read the full node
+        file.seek(root_block_id * 512)
+        node_data = file.read(512)
+        
+        # Unpack the node
+        node_format = ">QQQ" + "Q" * 19 + "Q" * 19 + "Q" * 20
+        unpacked = struct.unpack(node_format, node_data[:488])
+        
+        block_id, parent_block_id, num_keys = unpacked[:3]
+        keys = list(unpacked[3:22])
+        values = list(unpacked[22:41])
+        children = list(unpacked[41:61])
+        
+        # B-tree nodes are split by finding the middle value and making the left half the left child, and the right half the right child
+
+        # so first will save variables for the middle, left half and right half. And those halves will both become seperate new nodes
+
+        middle_index = 9
+        
+        middle_key = keys[middle_index]
+        middle_value = values[middle_index]
+        
+        # save left child data
+        left_keys = keys[:middle_index]
+        left_values = values[:middle_index]
+        left_children = children[:middle_index + 1]
+        
+        # save right child data
+        right_keys = keys[middle_index + 1:]
+        right_values = values[middle_index + 1:]
+        right_children = children[middle_index + 1:]
+        
+        # Create left node
+        left_node_data = struct.pack(node_format, 
+            root_block_id,  # Keep the original block ID for the left node
+            parent_block_id,   # Keep the original parent
+            len(left_keys),    # Number of keys
+            *left_keys, 
+            *left_values, 
+            *left_children
+        )
+        
+        # Create right node
+        right_node_block_id = next_block_id
+        next_block_id += 1
+        
+        right_node_data = struct.pack(node_format,
+            right_node_block_id,  # New block ID for right node
+            parent_block_id,       # Keep the original parent
+            len(right_keys),       # Number of keys
+            *right_keys,
+            *right_values,
+            *right_children
+        )
+
 # ---------- END OF INSERT FUNCTION ------------------------------------------------------------------------------
 
 def search(open_file):   

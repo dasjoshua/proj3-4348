@@ -140,4 +140,15 @@ Plan: create the load function
  - Ran into an issue that took me an hour to figure out, in main I accidently wrote the parameter as 'open_file' instead of 'open_filename'
  and this resulted in the load function reading the filename as a function and the program would error out. 
  I thought it was an issue in how I was parsing the numbers in the file, and tried multiple solutions until I realized I had a typo. 
- 
+
+-- 12/5 5:52pm -- 
+
+Plan: try to debug the error with creating new nodes
+
+ - I realize now I initially misunderstood the splitting functionality for a B-tree 
+ whenever a node is full, the current node gets split into two and the middle value gets pushed up as the root. 
+
+ - after watching a video about B-trees I updated the logic and am now instead of just making a single new node and putting the overflow pairs in it 
+ I'm splitting the node into a left and right node. 
+
+ But I'm still figuring out how I will save it back into the file and where it'll be inserted from. I know this is the logic needed though. 
